@@ -26,40 +26,58 @@ twist_cmd.angular.x = 0.0;
 twist_cmd.angular.y = 0.0;
 twist_cmd.angular.z = 0.0;
 
-twist_cmd.linear.x = 0.4;
+testTimer();
 
+moveForward(1200);
+rotateRight(500);
+moveForward(3000);
+rotateRight(500);
+moveForward(2250);
+rotateRight(500);
+moveForward(100);
+
+ROS_INFO("Robot has completed all tasks.. Shutting down.");
+while (ros::ok()) {
+    twist_cmd.linear.x = 0.0;
+    twist_cmd.angular.z = 0;
+    cmd_publisher.publish(twist_cmd); // and halt
+}
+return 0;
+}
 
 // timer test...print out a message every 1 second
-ROS_INFO("count-down");
-for (int j=3;j>0;j--) {
-    ROS_INFO("%d",j);
-    for (int i = 0; i<100;i++)
+void testTimer(){
+    ROS_INFO("Timer test count-down...");
+     for (int j=3;j>0;j--) {
+        ROS_INFO("%d",j);
+        for (int i = 0; i<100;i++)
+            sleep_timer.sleep();
+    }
+}
+
+//Rotates the robot to the right for the provided number of iterations
+//Note that 100 iterations is equivalent to 1 second.
+void rotateRight(int iterations){
+    twist_cmd.linear.x = 0.0;
+    twist_cmd.angular.z = -0.314;
+    ROS_INFO("Rotating the robot to the right for " + (iterations/100) + " seconds.");
+    for (int i = 0; i < iterations; i++) {
+        cmd_publisher.publish(twist_cmd);
         sleep_timer.sleep();
+    }
 }
 
-int niters = 1200; //1000 iters at 100Hz is 10 seconds;
-//iteration counter; at 10ms/iteration, and 0.2m/sec, expect 2mm/iter
-// should move by 2m over 10 sec
-for (int i=0;i<niters;i++) {
-    cmd_publisher.publish(twist_cmd); // really, should only need to publish this once, but no hard done
-    sleep_timer.sleep(); // sleep for (remainder of) 10m
+//Moves the robot forward for the provided number of iterations
+//Note that 100 iterations is equivalent to 1 second.
+//At 10ms/iteration, and 0.2m/sec, expect 2mm/iter
+//The robot should move by 2m over 10 sec
+void moveForward(int iterations){
+    twist_cmd.linear.x = 0.4;
+    twist_cmd.angular.z = 0.0;
+    ROS_INFO("Moving the robot forward for " + (iterations/100) + " seconds.");
+    for (int i = 0; i < iterations; i++) {
+        cmd_publisher.publish(twist_cmd);
+        sleep_timer.sleep();
+    }
 }
-twist_cmd.linear.x = 0.0;
-twist_cmd.angular.z = -0.314;
-niters=500; // 5 sec
-ROS_INFO("Time to rotate negative");
-for (int i=0;i<niters;i++) {
-    cmd_publisher.publish(twist_cmd); // really, should only need to publish this once, but no hard done
-    sleep_timer.sleep(); // sleep for (remainder of) 10m
-}
-ROS_INFO("my work here is done");
-//while (ros::ok()) 
-{
-twist_cmd.linear.x = 0.0;
-twist_cmd.angular.z = 0;
-cmd_publisher.publish(twist_cmd); // and halt
-}
-
-
-return 0;
 } 
